@@ -1,0 +1,122 @@
+/* 1. Global Styles & Background */
+body {
+    background-color: #fdfaf1; /* Light parchment color */
+    font-family: 'Georgia', serif; /* Classic font for a classical instrument */
+    color: #333; /* Dark grey for readability */
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* 2. Header Box Styling (Div 1) */
+.header-box {
+    background-color: #4a0e0e; /* Deep Mahogany wood color */
+    color: #ffffff; /* Font color style */
+    padding: 40px 20px;
+    text-align: center;
+    border-bottom: 5px solid #d4af37; /* Gold accent like instrument keys */
+}
+
+.header-box h1 {
+    font-family: 'Times New Roman', serif;
+    font-size: 3rem;
+    margin: 0;
+}
+
+.header-box nav a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* 3. Content Container Styling (Div 2) */
+.content-container {
+    max-width: 800px;
+    margin: 40px auto; /* Centers the div */
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+h2 {
+    color: #4a0e0e; /* Matching the mahogany theme */
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* 4. Media Wrapper Styling (Div 3) */
+.media-wrapper {
+    max-width: 900px;
+    margin: 20px auto;
+    text-align: center;
+    padding-bottom: 50px;
+}
+
+/* Specific styling for images and videos to keep them neat */
+img {
+    max-width: 100%;
+    height: auto;
+    border: 10px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    margin: 20px 0;
+}
+
+iframe {
+    margin: 10px 0;
+    border: none;
+}
+
+/* 6. Footer & Anchor styling */
+.footer-links {
+    margin-top: 40px;
+    font-style: italic;
+}
+
+.back-to-top {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4a0e0e;
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.back-to-top:hover {
+    background-color: #d4af37;
+    color: #4a0e0e;
+}
+
+/* Styling for the list section specifically */
+.list-container {
+    display: inline-block; /* Makes the div only as wide as its content */
+    text-align: left;      /* Keeps the text inside the list aligned to the left */
+    background-color: #fff; /* White background to make the list pop */
+    padding: 20px 50px 20px 30px; 
+    border-left: 5px solid #4a0e0e; /* A nice mahogany accent line */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin: 20px auto;
+    border-radius: 4px;
+}
+
+/* Ensure the parent of the list-container is centering its children */
+.media-wrapper {
+    text-align: center; 
+    padding: 20px;
+}
+
+/* Spacing out the list items for better readability */
+ol > li {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #4a0e0e;
+}
+
+ul > li {
+    margin-top: 5px;
+    font-weight: normal;
+    color: #333;
+    list-style-type: circle; /* Differentiates the sub-bullets */
+}

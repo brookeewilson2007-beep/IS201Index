@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connections Game</title>
+    <style>
+        /* CSS STYLING */
+        :root {
+            --yellow: #f9df6d;
+            --green: #a0c35a;
+            --blue: #b0c4ef;
+            --purple: #ba81c5;
+            --bg-color: #ffffff;
+            --tile-bg: #efefe6;
+            --tile-selected: #5a594e;
+            --text-color: #000000;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        h1 { 
+            border-bottom: 1px solid #e2e2e2; 
+            width: 100%; 
+            max-width: 600px;
+            text-align: center; 
+            padding-bottom: 10px; 
+            margin-bottom: 30px; 
+        }
+
+        #game-container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        #message-area {
+            height: 30px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tile {
+            aspect-ratio: 1 / 1;
+            background-color: var(--tile-bg);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 5px;
+            transition: background-color 0.1s, color 0.1s;
+        }
+
+        .tile.selected {
+            background-color: var(--tile-selected);
+            color: white;
+        }
+
+        .solved-row {
+            grid-column: span 4;
+            height: 60px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .solved-row span { font-size: 0.9rem; font-weight: normal; margin-top: 4px; }
+        .solved-row .cat-title { font-size: 1.1rem; }
+
+        .mistakes-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: #5a594e;
+            border-radius: 50%;
+            transition: opacity 0.3s;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        button, .home-btn {
+            background: none;
+            border: 1px solid #000;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            color: #000;
+            display: inline-block;
+        }
+
+        button:disabled {
+            border-color: #ccc;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #submit-btn {
+            background-color: #000;
+            color: #fff;
+        }
+        
+        #submit-btn:disabled {
+            background-color: #efefe6;
+            color: #7f7f7f;
+            border-color: transparent;
+        }
+
+        /* Home Button Section */
+        .home-container {
+            width: 100%;
+            max-width: 600px;
+            border-top: 1px solid #e2e2e2;
+            padding-top: 30px;
+            text-align: center;
+        }
+
+        .home-btn:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Connections</h1>
+    
+    <div id="game-container">
+        <div id="message-area">Create four groups of four!</div>
+        
+        <div id="solved-rows"></div>
+        <div id="grid"></div>
+
+        <div class="mistakes-container">
+            <span>Mistakes remaining:</span>
+            <div id="dots-container" style="display:flex; gap:8px;">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="shuffle-btn">Shuffle</button>
+            <button id="deselect-btn">Deselect All</button>
+            <button id="submit-btn" disabled>Submit</button>
+        </div>
+
+        <div class="home-container">
+            <a href="index.html" class="home-btn">Return to Home</a>
+        </div>
+    </div>
+
+<script>
+    /* JAVASCRIPT LOGIC */
+    const DATA = [
+        { category: "PARTS OF A BOOK", words: ["CHAPTER", "INDEX", "PAGE", "SPINE"], level: "yellow" },
+        { category: "KINDS OF SHOES", words: ["BOOT", "LOAFER", "PUMP", "SNEAKER"], level: "green" },
+        { category: "PALINDROMES", words: ["KAYAK", "LEVEL", "RADAR", "ROTOR"], level: "blue" },
+        { category: "___ BAR", words: ["CANDY", "SAND", "SOAP", "SPACE"], level: "purple" }
+    ];
+
+    let words = [];
+    let selectedWords = [];
+    let mistakes = 0;
+    let solvedCategories = [];
+
+    const grid = document.getElementById('grid');
+    const solvedArea = document.getElementById('solved-rows');
+    const submitBtn = document.getElementById('submit-btn');
+    const deselectBtn = document.getElementById('deselect-btn');
+    const shuffleBtn = document.getElementById('shuffle-btn');
+    const messageArea = document.getElementById('message-area');
+    const dotsContainer = document.getElementById('dots-container');
+
+    function init() {
+        words = DATA.flatMap(item => item.words.map(w => ({ text: w, cat: item.category })));
+        shuffle(words);
+        renderGrid();
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function renderGrid() {
+        grid.innerHTML = '';
+        words.forEach(wordObj => {
+            const div = document.createElement('div');
+            div.className = 'tile' + (selectedWords.includes(wordObj.text) ? ' selected' : '');
+            div.textContent = wordObj.text;
+            div.onclick = () => toggleSelect(wordObj.text);
+            grid.appendChild(div);
+        });
+    }
+
+    function toggleSelect(word) {
+        if (selectedWords.includes(word)) {
+            selectedWords = selectedWords.filter(w => w !== word);
+        } else if (selectedWords.length < 4) {
+            selectedWords.push(word);
+        }
+        submitBtn.disabled = selectedWords.length !== 4;
+        renderGrid();
+    }
+
+    deselectBtn.onclick = () => {
+        selectedWords = [];
+        submitBtn.disabled = true;
+        renderGrid();
+    };
+
+    shuffleBtn.onclick = () => {
+        shuffle(words);
+        renderGrid();
+    };
+
+    submitBtn.onclick = () => {
+        const currentCategory = checkMatch();
+        
+        if (currentCategory) {
+            handleSuccess(currentCategory);
+        } else {
+            handleFailure();
+        }
+    };
+
+    function checkMatch() {
+        for (const cat of DATA) {
+            if (selectedWords.every(w => cat.words.includes(w))) {
+                return cat;
+            }
+        }
+        return null;
+    }
+
+    function handleSuccess(category) {
+        solvedCategories.push(category);
+        words = words.filter(w => !category.words.includes(w.text));
+        selectedWords = [];
+        submitBtn.disabled = true;
+
+        const row = document.createElement('div');
+        row.className = 'solved-row';
+        row.style.backgroundColor = `var(--${category.level})`;
+        row.innerHTML = `<div class="cat-title">${category.category}</div><span>${category.words.join(', ')}</span>`;
+        solvedArea.appendChild(row);
+
+        renderGrid();
+
+        if (solvedCategories.length === 4) {
+            displayFinalMessage();
+        }
+    }
+
+    function handleFailure() {
+        mistakes++;
+        updateDots();
+        selectedWords = [];
+        submitBtn.disabled = true;
+        renderGrid();
+
+        if (mistakes >= 4) {
+            messageArea.textContent = "Too many failed attempts. Better luck next time!";
+            disableGame();
+        } else {
+            messageArea.textContent = "Not quite!";
+            setTimeout(() => { 
+                if(mistakes < 4 && solvedCategories.length < 4) messageArea.textContent = ""; 
+            }, 2000);
+        }
+    }
+
+    function updateDots() {
+        const dots = dotsContainer.querySelectorAll('.dot');
+        if (dots.length > 0) {
+            dots[dots.length - 1].remove();
+        }
+    }
+
+    function displayFinalMessage() {
+        let msg = "";
+        // Messages based on your specific requirements:
+        if (mistakes === 0) msg = "Perfect!";
+        else if (mistakes === 1) msg = "Easy breezy";
+        else if (mistakes === 2) msg = "Nice work!";
+        else if (mistakes === 3) msg = "Too close for comfort...";
+        
+        messageArea.textContent = msg;
+        disableGame();
+    }
+
+    function disableGame() {
+        submitBtn.disabled = true;
+        shuffleBtn.disabled = true;
+        deselectBtn.disabled = true;
+        const tiles = document.querySelectorAll('.tile');
+        tiles.forEach(t => {
+            t.style.pointerEvents = 'none';
+            t.style.opacity = '0.6';
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
